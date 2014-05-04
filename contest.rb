@@ -1,51 +1,26 @@
+require "minitest/autorun"
+
 class Contest
 
 	attr_reader :puzzles, :prizes, :gifts
 
-	def intialize
+	def initialize
 		# Kacper: contest musi miec gracza - komu dodasz nagrade? 
 		@puzzles = []
 		@prizes = []
 		@gifts = []
+		@players = []
 	end
 
 	def add_puzzle(another_puzzle)
-		puzzles << another_puzzle
+		@puzzles << another_puzzle
 	end
 
-	def give_puzzle
-		if @puzzles.empty? 
-			puts "GAME OVER. All the puzzles have been answered."
-		else 
-			# Kacper: musisz zapamietac ktora zagadke wylosowalas zeby sprawdzic odpowiedz...
-			puts "#{@puzzles.sample}"
-		end
-
-		answer = gets.chomp
-		# Kacper: if powinien sprawdzac czy odpowiedz gracza zgadza sie z odpowiedzia w zapamietanej wylosowanej zagadce
-		if answer == @answer 
-			if @prizes.empty?
-				puts "Good answer!! But there is no more prizes, we are very sorry!"
-			else
-			# Kacper: tutaj gracz powinien otrzymac nagrode
-			@winnings << winning = @prizes.sample
-			@prizes.delete(winning)
-			puts "Well done! You won #{winning}!"
-			end
-		else
-			luck = rand(2)
-			# Kacper: @gifts.empty == false mozesz zastapic !@gifts.empty?
-			if luck == 1 && @gifts.empty == false
-			@winning << winning = @gifts.sample
-			puts "Answer incorrect, but you are getting a surpise gift anyway!"
-			@gifts.delete(winning)
-			else
-			puts "Answer incorrect! Try again!"
-			end
-		end
-			
-	end
-
+  def draw_puzzle
+    sample_puzzle = @puzzles.sample
+    @puzzles.delete(sample_puzzle)
+    sample_puzzle
+  end
 end
 
 class Puzzle
@@ -55,13 +30,11 @@ class Puzzle
 	def initialize(question, answer)
 		@question = question
 		@answer = answer
-		# return {question => answer}
-		# @puzzles << self
 	end
 
 	# Kacper: create_puzzle mozesz zrobic jako metode klasy: self.create_puzzle
 	#  tak zebys mogla napisac: contest.add_puzzle(Puzzle.create_puzzle)
-	def create_puzzle
+	def self.create_puzzle
 		puts "You can create your own puzzle!"
 		puts "Here comes the question:"
 		question = gets.chomp
@@ -97,11 +70,11 @@ class Player
 
 	attr_reader :name, :winnings
 
-	def initialize(name)
-		@name = name.capitalize
+  def initialize(name = "no name")
+    @name = name.to_s.capitalize
 		@winnings = []
 		puts "Hi, my name is #{@name}, I'm new in the game!"
-	end
+  end
 
 	def show_winnings
 		puts "#{@name} have won: #{@winnings}!"
@@ -109,12 +82,91 @@ class Player
 	end
 end
 
-mountain = Puzzle.new("The highest mountain is?", "Mount Everest")
+describe Player do
+    describe "when initialized" do
+      it "has a correct name" do		
+	lolek = Player.new("Lolek")
+	lolek.name.must_equal "Lolek"
+      end
+    end
+  end
 
-house = Puzzle.new("people in the house - number", "4")
-puts house.question
-puts house.answer
+describe Prize do
+    describe "when initialized" do
+      it "has a correct name" do		
+      	chocolate = Prize.new("Choco", 10)
+	      chocolate.name.must_equal "Choco"
+      end
 
+      it "has a correct value" do
+        chocolate = Prize.new("Choco", 10)
+        chocolate.value.must_equal 10
+      end
+    end
+end
 
-puts firstone = Contest.new
-firstone.give_puzzle
+  describe Gift do
+    describe "when initialized" do
+      it "has a correct name" do
+        kinder = Gift.new("bueno", "papierek")
+        kinder.name.must_equal "bueno"
+      end
+    end
+  end
+
+  describe Contest do
+    describe "when draw puzzle" do
+      before do
+        @a_contest = Contest.new
+        @a_puzzle = Puzzle.new("who is the current american president", nil)
+        @a_contest.add_puzzle(@a_puzzle)
+      end
+
+      it "asks question" do
+        @a_contest.draw_puzzle.must_equal @a_puzzle
+       end
+      
+
+      it "deletes puzzle from puzzle array" do
+        @a_contest.draw_puzzle.must_equal @a_puzzle
+        @a_contest.puzzles.must_equal []
+      end
+    end
+
+    describe "when apply answer" do
+      before do
+           @a_contest = Contest.new
+           @a_puzzle = Puzzle.new("who is the current american president", "obama")
+           @a_player = Player.new(nil)
+           @prize = Prize.new(nil, nil)
+           @gift = Gift.new(nil, nil)
+           @a_contest.prizes << @a_prize
+           @a_contest.gifts << @a_gift
+      end
+
+      describe "when answer is correct" do
+
+        it "gives a prize to the player" do
+          @a_player.winnings.must_equal @a_prize
+        end
+        it "removes a prize from prizes" do
+          @a_contest.prizes.must_equal []
+        end
+        it "returns true" do
+          @a_result.must_equal true
+        end
+      end
+
+      describe "when answer is incorrect" do
+        it "gives a gift to the player" do
+          @a_player.winnings.must_equal @a_gift
+        end
+        it "removes a gift from gifts" do
+          @a_contest.gifts.must_equal []
+        end
+        it "returns false" do
+          @a_result.must_equal false
+        end
+      end
+    end
+  end
