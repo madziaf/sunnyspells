@@ -2,7 +2,7 @@ require "minitest/autorun"
 
 class Contest
 
-	attr_reader :puzzles, :prizes, :gifts
+	attr_reader :puzzles, :prizes, :gifts, :players
 
 	def initialize
 		# Kacper: contest musi miec gracza - komu dodasz nagrade? 
